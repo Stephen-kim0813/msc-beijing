@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>北京CBD甲级写字楼对比报告</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --accent1: #2563eb;
+    --accent2: #f59e0b;
+    --accent3: #10b981;
+    --accent4: #ef4444;
+    --border: #e5e7eb;
+    --shadow: 0 4px 24px rgba(0,0,0,.06);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+
+  /* Header */
+  .hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #0ea5e9 100%);
+    color:#fff; padding:60px 40px 50px; text-align:center; position:relative; overflow:hidden;
+  }
+  .hero::after {
+    content:''; position:absolute; bottom:-40px; left:0; right:0; height:80px;
+    background:var(--bg); border-radius:50% 50% 0 0;
+  }
+  .hero h1 { font-size:2.6rem; font-weight:800; letter-spacing:1px; }
+  .hero p { font-size:1.1rem; opacity:.85; margin-top:10px; }
+  .hero .date { font-size:.85rem; opacity:.6; margin-top:6px; }
+
+  /* Layout */
+  .container { max-width:1280px; margin:0 auto; padding:0 24px 60px; }
+  .section { margin-top:48px; }
+  .section-title {
+    font-size:1.4rem; font-weight:700; margin-bottom:20px; padding-left:14px;
+    border-left:4px solid var(--accent1); display:flex; align-items:center; gap:10px;
+  }
+  .section-title .icon { font-size:1.3rem; }
+
+  /* Legend */
+  .legend { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; margin:30px 0 10px; }
+  .legend-item { display:flex; align-items:center; gap:6px; font-size:.88rem; color:var(--muted); }
+  .legend-dot { width:12px; height:12px; border-radius:3px; }
+
+  /* Cards */
+  .card-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+  .card {
+    background:var(--card); border-radius:14px; padding:24px 20px; box-shadow:var(--shadow);
+    border-top:4px solid var(--accent1); transition:transform .2s;
+  }
+  .card:hover { transform:translateY(-3px); }
+  .card:nth-child(2) { border-top-color:var(--accent2); }
+  .card:nth-child(3) { border-top-color:var(--accent3); }
+  .card:nth-child(4) { border-top-color:var(--accent4); }
+  .card h3 { font-size:1.15rem; margin-bottom:4px; }
+  .card .sub { font-size:.82rem; color:var(--muted); margin-bottom:14px; }
+  .card .metric { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--border); font-size:.88rem; }
+  .card .metric:last-child { border-bottom:none; }
+  .card .metric .val { font-weight:600; color:var(--accent1); }
+  .card:nth-child(2) .metric .val { color:var(--accent2); }
+  .card:nth-child(3) .metric .val { color:var(--accent3); }
+  .card:nth-child(4) .metric .val { color:var(--accent4); }
+
+  /* Tables */
+  .table-wrap {
+    background:var(--card); border-radius:14px; box-shadow:var(--shadow); overflow-x:auto;
+  }
+  table { width:100%; border-collapse:collapse; font-size:.88rem; }
+  thead th {
+    background:#f0f4ff; font-weight:700; text-align:left; padding:14px 16px;
+    position:sticky; top:0; white-space:nowrap;
+  }
+  thead th:first-child { border-radius:14px 0 0 0; }
+  thead th:last-child { border-radius:0 14px 0 0; }
+  tbody td { padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:top; }
+  tbody tr:hover { background:#f9fafb; }
+  tbody tr:last-child td { border-bottom:none; }
+  .col-label { font-weight:600; white-space:nowrap; min-width:120px; background:#fafbfc; }
+
+  /* Highlight tags */
+  .tag { display:inline-block; padding:2px 8px; border-radius:6px; font-size:.78rem; font-weight:600; }
+  .tag-blue { background:#dbeafe; color:#1d4ed8; }
+  .tag-amber { background:#fef3c7; color:#92400e; }
+  .tag-green { background:#d1fae5; color:#065f46; }
+  .tag-red { background:#fee2e2; color:#991b1b; }
+  .tag-gray { background:#f3f4f6; color:#4b5563; }
+
+  /* Charts */
+  .chart-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .chart-box {
+    background:var(--card); border-radius:14px; padding:24px; box-shadow:var(--shadow);
+  }
+  .chart-box h4 { font-size:1rem; font-weight:600; margin-bottom:16px; text-align:center; }
+  .chart-box canvas { max-height:340px; }
+
+  /* Score bar */
+  .score-section { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+  .score-card {
+    background:var(--card); border-radius:14px; padding:20px; box-shadow:var(--shadow); text-align:center;
+  }
+  .score-card h4 { font-size:.95rem; margin-bottom:12px; }
+  .score-ring { position:relative; width:110px; height:110px; margin:0 auto 12px; }
+  .score-ring canvas { width:110px!important; height:110px!important; }
+  .score-val { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.5rem; font-weight:800; }
+
+  /* Footer */
+  .footer { text-align:center; padding:36px; color:var(--muted); font-size:.82rem; }
+
+  /* Responsive */
+  @media(max-width:900px){
+    .card-grid, .score-section { grid-template-columns:repeat(2,1fr); }
+    .chart-row { grid-template-columns:1fr; }
+    .hero h1 { font-size:1.8rem; }
+  }
+  @media(max-width:600px){
+    .card-grid, .score-section { grid-template-columns:1fr; }
+  }
+
+  /* Tabs */
+  .tab-bar { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .tab-btn {
+    padding:8px 18px; border-radius:8px; border:1px solid var(--border);
+    background:var(--card); font-size:.88rem; cursor:pointer; transition:.2s;
+  }
+  .tab-btn.active { background:var(--accent1); color:#fff; border-color:var(--accent1); }
+  .tab-btn:hover { background:#e0e7ff; }
+  .tab-btn.active:hover { background:#1d4ed8; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* Stars */
+  .stars { color:#f59e0b; letter-spacing:2px; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>北京CBD甲级写字楼对比报告</h1>
+  <p>银泰中心 · 华贸中心 · 正大中心 · 国贸写字楼1座</p>
+  <div class="date">报告生成日期：2026年4月14日</div>
+</div>
+
+<div class="container">
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent1)"></div>银泰中心</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>华贸中心</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div>正大中心</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent4)"></div>国贸写字楼1座</div>
+  </div>
+
+  <!-- 1. Overview Cards -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🏢</span> 项目概览</div>
+    <div class="card-grid">
+      <div class="card">
+        <h3>银泰中心</h3>
+        <div class="sub">Beijing Yintai Centre</div>
+        <div class="metric"><span>建筑高度</span><span class="val">186m / 44F</span></div>
+        <div class="metric"><span>写字楼面积</span><span class="val">76,000 ㎡</span></div>
+        <div class="metric"><span>标准层面积</span><span class="val">2,101 ㎡</span></div>
+      </div>
+      <div class="card">
+        <h3>华贸中心</h3>
+        <div class="sub">China Central Place</div>
+        <div class="metric"><span>建筑高度</span><span class="val">167.3m / 36F</span></div>
+        <div class="metric"><span>写字楼面积</span><span class="val">~200,000 ㎡</span></div>
+        <div class="metric"><span>标准层面积</span><span class="val">2,180-2,385 ㎡</span></div>
+      </div>
+      <div class="card">
+        <h3>正大中心</h3>
+        <div class="sub">CP Center</div>
+        <div class="metric"><span>建筑高度</span><span class="val">~200m / 45F</span></div>
+        <div class="metric"><span>写字楼面积</span><span class="val">180,000 ㎡</span></div>
+        <div class="metric"><span>标准层面积</span><span class="val">2,400 ㎡</span></div>
+      </div>
+      <div class="card">
+        <h3>国贸写字楼1座</h3>
+        <div class="sub">China World Trade Center</div>
+        <div class="metric"><span>建筑高度</span><span class="val">330m / 81F</span></div>
+        <div class="metric"><span>写字楼面积</span><span class="val">393,000 ㎡</span></div>
+        <div class="metric"><span>标准层面积</span><span class="val">1,500 ㎡</span></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 3. Tabbed Detail Tables -->
+  <div class="section">
+    <div class="section-title"><span class="icon">📋</span> 详细参数对比</div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab(event,'tab-building')">建筑规格</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-office')">办公空间</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-mep')">机电系统</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-elevator')">电梯配置</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-transport')">位置交通</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-amenity')">配套设施</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-tenant')">入驻租户</button>
+    </div>
+
+    <!-- Tab: 建筑规格 -->
+    <div id="tab-building" class="tab-content active">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>参数</th><th>银泰中心</th><th>华贸中心</th><th>正大中心</th><th>国贸写字楼1座</th></tr></thead>
+          <tbody>
+            <tr><td class="col-label">建筑高度</td><td>186m / 44层</td><td>135-167.3m / 28-36层</td><td>~200m / 45层（双子塔）</td><td>国贸大厦A 330m/81F<br>B 296m/63F<br>写字楼1&2 155m/37F</td></tr>
+            <tr><td class="col-label">写字楼总面积</td><td>76,000 ㎡</td><td>~200,000 ㎡（3栋）</td><td>180,000 ㎡（2栋×90,000）</td><td>393,000 ㎡（5栋）</td></tr>
+            <tr><td class="col-label">写字楼栋数</td><td>1栋</td><td>3栋</td><td>2栋（双子塔）</td><td>5栋</td></tr>
+            <tr><td class="col-label">竣工年份</td><td>2008年</td><td>2008-2010年</td><td>2022年翻新</td><td>1990-2017年分期</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: 办公空间 -->
+    <div id="tab-office" class="tab-content">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>参数</th><th>银泰中心</th><th>华贸中心</th><th>正大中心</th><th>国贸写字楼1座</th></tr></thead>
+          <tbody>
+            <tr><td class="col-label">标准层面积</td><td>2,101.6 ㎡</td><td>2,180-2,385 ㎡</td><td>2,400 ㎡</td><td>1,500 ㎡</td></tr>
+            <tr><td class="col-label">办公净高</td><td>2.7m</td><td>2.7m</td><td>2.95m</td><td>2.8m</td></tr>
+            <tr><td class="col-label">层高</td><td>4.0m</td><td>3.9m</td><td>4.5m</td><td>4.0m</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: 机电系统 -->
+    <div id="tab-mep" class="tab-content">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>参数</th><th>银泰中心</th><th>华贸中心</th><th>正大中心</th><th>国贸写字楼1座</th></tr></thead>
+          <tbody>
+            <tr><td class="col-label">供电方式</td><td>7,200 KVA 双路供电</td><td>10KV 双路市电<br>备用1,200 KVA柴油发电</td><td>双路供电</td><td>双路供电</td></tr>
+            <tr><td class="col-label">空调系统</td><td>VAV 变风量</td><td>VAV 变风量</td><td>VAV + 独立新风</td><td>中央空调</td></tr>
+            <tr><td class="col-label">加时空调</td><td>有</td><td>150元/小时/层</td><td>有</td><td>有</td></tr>
+            <tr><td class="col-label">消防系统</td><td>自动喷淋 + 烟感</td><td>自动喷淋 + 烟感</td><td>自动喷淋 + 烟感</td><td>自动喷淋 + 烟感</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: 电梯配置 -->
+    <div id="tab-elevator" class="tab-content">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>参数</th><th>银泰中心</th><th>华贸中心</th><th>正大中心</th><th>国贸写字楼1座</th></tr></thead>
+          <tbody>
+            <tr><td class="col-label">客梯数量</td><td>24部（双轿厢）</td><td>20部（低区6+高区6+穿梭3+货梯2+VIP2）</td><td>高低区各配置</td><td>各栋独立配置</td></tr>
+            <tr><td class="col-label">分区运行</td><td>高低区分区</td><td>低区/高区/穿梭梯</td><td>高低区分区</td><td>高低区分区</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: 位置交通 -->
+    <div id="tab-transport" class="tab-content">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>参数</th><th>银泰中心</th><th>华贸中心</th><th>正大中心</th><th>国贸写字楼1座</th></tr></thead>
+          <tbody>
+            <tr><td class="col-label">地理位置</td><td>建国门外大街2号</td><td>建国路77号</td><td>建国路甲正大中心</td><td>建国门外大街1号</td></tr>
+            <tr><td class="col-label">地铁线路</td><td>国贸站（1/10号线）</td><td>大望路站（1/14号线）</td><td>国贸站（1/10/28号线）</td><td>国贸站（1/10号线）</td></tr>
+            <tr><td class="col-label">地铁连通</td><td>近地铁</td><td>地铁上盖</td><td>近地铁</td><td>直连地铁</td></tr>
+            <tr><td class="col-label">停车位</td><td>1,609个</td><td>5,000个（办公专用1,400）</td><td>智能泊车系统</td><td>大型地下停车场</td></tr>
+            <tr><td class="col-label">周边交通</td><td>长安街/东三环交汇</td><td>西大望路/建国路交汇</td><td>东三环/建国路交汇</td><td>长安街/东三环交汇</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: 配套设施 -->
+    <div id="tab-amenity" class="tab-content">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>参数</th><th>银泰中心</th><th>华贸中心</th><th>正大中心</th><th>国贸写字楼1座</th></tr></thead>
+          <tbody>
+            <tr><td class="col-label">商业配套</td><td>银泰中心购物商城</td><td>华贸购物中心<br>SKP（南馆）</td><td>正大广场</td><td>国贸商城 237,000㎡<br>423家品牌店</td></tr>
+            <tr><td class="col-label">餐饮配套</td><td>柏悦酒店餐饮<br>裙楼餐饮</td><td>多家高端餐饮</td><td>裙楼餐饮</td><td>多家知名餐厅<br>中国大饭店餐饮</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: 入驻租户 -->
+    <div id="tab-tenant" class="tab-content">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>参数</th><th>银泰中心</th><th>华贸中心</th><th>正大中心</th><th>国贸写字楼1座</th></tr></thead>
+          <tbody>
+            <tr><td class="col-label">知名租户</td>
+              <td>多家知名金融机构<br>国际律所</td>
+              <td>Tesla · 德意志银行<br>法国巴黎银行 · 普华永道<br>BP · 安联保险<br>三星 · 拜耳<br>共16家世界500强</td>
+              <td>正大集团中国总部<br>多家跨国企业</td>
+              <td>300+租户<br>众多世界500强<br>国际金融/法律机构</td>
+            </tr>
+            <tr><td class="col-label">行业分布</td><td>金融、法律为主</td><td>金融、能源、科技、咨询</td><td>综合型</td><td>金融、法律、科技、贸易</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Scoring -->
+  <div class="section">
+    <div class="section-title"><span class="icon">⭐</span> 综合评分（满分5分）</div>
+    <div class="score-section">
+      <div class="score-card">
+        <h4>银泰中心</h4>
+        <canvas id="score1" width="110" height="110"></canvas>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--accent1);margin:8px 0;">4.3</div>
+        <div style="font-size:.82rem;color:var(--muted);">
+          品质标杆 · LEED铂金<br>国际五星物管
+        </div>
+      </div>
+      <div class="score-card">
+        <h4>华贸中心</h4>
+        <canvas id="score2" width="110" height="110"></canvas>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--accent2);margin:8px 0;">4.2</div>
+        <div style="font-size:.82rem;color:var(--muted);">
+          体量大 · 租户强<br>地铁上盖 · 配套全
+        </div>
+      </div>
+      <div class="score-card">
+        <h4>正大中心</h4>
+        <canvas id="score3" width="110" height="110"></canvas>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--accent3);margin:8px 0;">4.4</div>
+        <div style="font-size:.82rem;color:var(--muted);">
+          最新翻新 · 净高最高<br>智能化领先
+        </div>
+      </div>
+      <div class="score-card">
+        <h4>国贸写字楼1座</h4>
+        <canvas id="score4" width="110" height="110"></canvas>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--accent4);margin:8px 0;">4.5</div>
+        <div style="font-size:.82rem;color:var(--muted);">
+          CBD地标 · 体量最大<br>配套最全 · 300+租户
+        </div>
+      </div>
+    </div>
+
+    <!-- Score Breakdown -->
+    <div class="table-wrap" style="margin-top:20px;">
+      <table>
+        <thead><tr><th>评分维度</th><th>银泰中心</th><th>华贸中心</th><th>正大中心</th><th>国贸写字楼1座</th></tr></thead>
+        <tbody>
+          <tr><td class="col-label">建筑品质</td><td class="stars">★★★★★</td><td class="stars">★★★★☆</td><td class="stars">★★★★★</td><td class="stars">★★★★★</td></tr>
+          <tr><td class="col-label">办公空间</td><td class="stars">★★★★☆</td><td class="stars">★★★★☆</td><td class="stars">★★★★★</td><td class="stars">★★★★☆</td></tr>
+          <tr><td class="col-label">交通便捷</td><td class="stars">★★★★☆</td><td class="stars">★★★★★</td><td class="stars">★★★★★</td><td class="stars">★★★★★</td></tr>
+          <tr><td class="col-label">配套设施</td><td class="stars">★★★★☆</td><td class="stars">★★★★★</td><td class="stars">★★★☆☆</td><td class="stars">★★★★★</td></tr>
+          <tr><td class="col-label">智能化</td><td class="stars">★★★☆☆</td><td class="stars">★★★☆☆</td><td class="stars">★★★★★</td><td class="stars">★★★★☆</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 5. Summary -->
+  <div class="section">
+    <div class="section-title"><span class="icon">💡</span> 总结与建议</div>
+    <div class="table-wrap" style="padding:28px;">
+      <p style="margin-bottom:16px;"><strong>国贸写字楼1座</strong>作为CBD绝对核心地标，拥有最大的办公体量（39.3万㎡）和最完善的综合配套（酒店、商业、公寓、会议中心一应俱全），适合追求最高品牌效应和综合服务的企业总部。</p>
+      <p style="margin-bottom:16px;"><strong>正大中心</strong>经过全面翻新，在办公空间参数上表现最优（净高2.95m、层高4.5m、进深13m），智能化水平领先（人脸识别、智能派梯、智能泊车、三层PM2.5过滤），是注重办公品质和科技感的企业首选。</p>
+      <p style="margin-bottom:16px;"><strong>银泰中心</strong>以LEED铂金级认证和第一太平戴维斯国际化物业管理著称，John Portman设计赋予其独特的建筑美学价值，适合对绿色环保和物业品质有极高要求的金融/法律机构。</p>
+      <p><strong>华贸中心</strong>胜在大体量和成熟的商务氛围（16家世界500强入驻），地铁上盖优势明显，配套丰富（丽思卡尔顿+JW万豪双五星酒店），适合希望融入成熟商务社区、享受便捷交通的中大型企业。</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  北京CBD甲级写字楼对比报告 &copy; 2026 · 数据来源：各项目官方招商资料
+</div>
+
+<script>
+const colors = ['#2563eb','#f59e0b','#10b981','#ef4444'];
+const labels = ['银泰中心','华贸中心','正大中心','国贸写字楼1座'];
+
+// Tab switch
+function switchTab(e, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// Chart defaults
+Chart.defaults.font.family = '-apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+Chart.defaults.plugins.legend.display = false;
+
+// Score donuts
+function drawScore(id, score, color) {
+  const ctx = document.getElementById(id).getContext('2d');
+  new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      datasets:[{
+        data:[score, 5-score],
+        backgroundColor:[color, '#f0f0f0'],
+        borderWidth:0
+      }]
+    },
+    options:{
+      cutout:'75%', responsive:false,
+      plugins:{legend:{display:false}, tooltip:{enabled:false}}
+    }
+  });
+}
+drawScore('score1', 4.3, colors[0]);
+drawScore('score2', 4.2, colors[1]);
+drawScore('score3', 4.4, colors[2]);
+drawScore('score4', 4.5, colors[3]);
+</script>
+</body>
+</html>
